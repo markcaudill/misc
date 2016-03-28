@@ -16,5 +16,23 @@ if __name__ == '__main__':
     lat, lon = requests.get('http://ip-api.com/csv').text.split(',')[7:9]
     content = requests.get('https://api.forecast.io/forecast/%s/%s,%s' % (
         api_key, lat, lon)).json()
-    print('%d° and %s' % (content['currently']['temperature'],
-                          content['currently']['summary']))
+
+    # Possible `icon`s per https://developer.forecast.io/docs/v2
+    emojis = {'clear-day': '☀',
+              'clear-night': '🌙',
+              'rain': '☔',
+              'snow': '🌨',
+              'sleet': '⛆',
+              'wind': '🍃',
+              'fog': '🌁',
+              'cloudy': '☁',
+              'partly-cloudy-day': '⛅',
+              'partly-cloudy-night': '☁'}
+
+    try:
+        status = '%s %d°' % (emojis[content['currently']['icon']],
+                content['currently']['temperature'])
+    except KeyError:
+        status = '%d° and %s' % (content['currently']['temperature'],
+                content['currently']['summary'])
+    print(status)
