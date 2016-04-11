@@ -3,6 +3,7 @@ import argparse
 import configparser
 import os
 import requests
+import sys
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -12,7 +13,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = configparser.SafeConfigParser()
     config.read([args.config])
-    api_key = config.get('Forecast', 'api_key')
+    try:
+        api_key = config.get('Forecast', 'api_key')
+    except configparser.NoSectionError:
+        print('Unable to find a "Forecast" section in %s.' % args.config)
+        sys.exit(1)
+    except configparser.NoOptionError:
+        print('Unable to find "api_key" in the "Forecast" section in %s.' %
+                args.config)
+        sys.exit(1)
     lat, lon = requests.get('http://ip-api.com/csv').text.split(',')[7:9]
     content = requests.get('https://api.forecast.io/forecast/%s/%s,%s' % (
         api_key, lat, lon)).json()
