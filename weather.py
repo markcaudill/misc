@@ -10,6 +10,8 @@ if __name__ == '__main__':
         description='Get weather in the command line.')
     parser.add_argument('--config',
         default=os.path.expanduser('~/.forecast.io'))
+    parser.add_argument('--no-emoji', default=False,
+        action='store_true')
     args = parser.parse_args()
     config = configparser.SafeConfigParser()
     config.read([args.config])
@@ -38,10 +40,20 @@ if __name__ == '__main__':
               'partly-cloudy-day': '⛅',
               'partly-cloudy-night': '☁'}
 
-    try:
-        status = '%s %d°' % (emojis[content['currently']['icon']],
-                content['currently']['temperature'])
-    except KeyError:
-        status = '%d° and %s' % (content['currently']['temperature'],
-                content['currently']['summary'])
+    if args.no_emoji is True:
+        status = '%d° %s now; %d° %s today; %d° %s tomorrow' % (
+                content['currently']['temperature'],
+                content['currently']['summary'],
+                content['daily']['data'][0]['temperatureMax'],
+                content['daily']['data'][0]['summary'][:-1],
+                content['daily']['data'][1]['temperatureMax'],
+                content['daily']['data'][1]['summary'][:-1])
+    else:
+        status = '%s %d° now; %s %d° today; %s %d° tomorrow' % (
+                emojis[content['currently']['icon']],
+                content['currently']['temperature'],
+                emojis[content['daily']['data'][0]['icon']],
+                content['daily']['data'][0]['temperatureMax'],
+                emojis[content['daily']['data'][1]['icon']],
+                content['daily']['data'][1]['temperatureMax'])
     print(status)
